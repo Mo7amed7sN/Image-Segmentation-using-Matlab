@@ -1,0 +1,85 @@
+I = imread('C:\Users\toshiba\Desktop\jump.jpg') ;
+imshow(I)
+title('Original Image');
+
+grayImage =rgb2gray(I);
+% Detect Entire Cell
+[~,threshold] = edge(grayImage,'prewitt'); %or sobel
+BWs = edge(grayImage,'prewitt',threshold*(0.5)); %or sobel
+%figure,imshow(BWs)
+title('Binary Gradient Mask')  
+%Dilate the Image
+se90 = strel('line',3,90);
+se0 = strel('line',3,0);
+BWsdil = imdilate(BWs,[se90,se0]);
+figure,imshow(BWsdil)
+title('Dilated Gradient Mask')
+
+%Fill Interior Gaps
+BWdfill = imfill(BWsdil,'holes');
+%figure,imshow(BWdfill)
+
+%Remove Connected Objects on Border
+BWnobord = imclearborder(BWdfill,4);
+%figure,imshow(BWnobord)
+%title('Cleared Border Image')
+%Smooth the Object
+seD = strel('diamond',1);    
+BWfinal = imerode(BWnobord,seD);
+BWfinal = imerode(BWfinal,seD);
+imshow(BWfinal)
+title('Segmented Image');
+RGB = label2rgb(BWfinal);
+%figure,imshow(RGB)
+%figure,imshow(labeloverlay(I,BWfinal))
+%title('Mask Over Original Image')
+[row,col]=size(BWfinal);
+[row1,col1]=size(I);
+disp(row)
+disp(row1)
+v = zeros(row,col,3);
+m = uint8(double(I)-double(RGB));
+
+figure,imshow(m)
+for i = 1:row
+    for j = 1:col
+        if m(i,j) > 0 
+        for u=j :col
+        if m(i,u) > 0
+            v(i,j,1) =I(i,j,1);
+            v(i,j,2) =I(i,j,2);
+            v(i,j,3) =I(i,j,3);
+          %  disp(I(i,j))
+        end 
+        end
+        end
+    end
+   
+end
+cc= uint8(double(I)-double(v));
+bb= uint8(double(I)-double(cc));
+figure,imshow(bb)
+
+%add 
+bbb =imread('E:\4th year\image\labs\lab5\Task\jump2.jpg');
+[x,y,c]=size(bbb);
+imresize(bb,[x,y]);
+figure,imshow(bb)
+nn = zeros(x,y);
+for i = 1:x
+    for j = 1:y
+        if bb(i,j) > 0 
+            bbb(i,j,1) =bb(i,j,1);
+            bbb(i,j,2) =bb(i,j,2);
+            bbb(i,j,3) =bb(i,j,3);
+        else
+            bbb(i,j,1) =bbb(i,j,1);
+            bbb(i,j,2) =bbb(i,j,2);
+            bbb(i,j,3) =bbb(i,j,3);
+        
+        end
+    end
+   
+end
+figure,imshow(bbb)
+%imshow(bbb)
